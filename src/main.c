@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include "prompt.h"
 #include "spec2.h"
+#include "hop.h"
 int main() {
+    initialize_directories();
     char command[4096];
     while (1) {
         update_prompt();

@@ -13,9 +13,18 @@ int count_occurrences(const char *str, char ch) {
     while (*str) { if (*str == ch) count++; str++; }
     return count;
 }
+int processor(char* command, char* totest) {
+    char command_copy[4096];
+    strncpy(command_copy, command, sizeof(command_copy));
+    command_copy[sizeof(command_copy) - 1] = '\0';
+    char *first_word = strtok(command_copy, " ");
+    if (first_word && strcmp(first_word, totest) == 0) return 1;
+    return 0;
+}
 void execute_input(char* command, int flag) {
     if (strlen(command) < 1) return;
-    printf("Executing: %s\n", command);
+    if (processor(command, "hop")) { process_hop_command(command); return; }
+    printf("Unknown command: %s\n", command);
 }
 void semicolon_input(char* command, int flag) {
     int numsc = count_occurrences(command, ';');
