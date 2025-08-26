@@ -5,8 +5,7 @@ char* trim_whitespace(char* str) {
     if(*str == 0) return str;
     end = str + strlen(str) - 1;
     while(end > str && isspace((unsigned char)*end)) end--;
-    *(end+1) = '\0';
-    return str;
+    *(end+1) = '\0'; return str;
 }
 int count_occurrences(const char *str, char ch) {
     int count = 0;
@@ -24,6 +23,7 @@ int processor(char* command, char* totest) {
 void execute_input(char* command, int flag) {
     if (strlen(command) < 1) return;
     if (processor(command, "hop")) { process_hop_command(command); return; }
+    else if (processor(command, "reveal")) { process_reveal_command(command); return; }
     printf("Unknown command: %s\n", command);
 }
 void semicolon_input(char* command, int flag) {
