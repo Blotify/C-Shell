@@ -28,7 +28,7 @@ void execute_post_input(char* command, int flag) {
         else { display_log(home_dir); return; }
     }
     else if (processor(command, "reveal")) { process_reveal_command(command); return; }
-    else { printf("Unknown: %s\n", command); }
+    else { syscommands(command, flag); }
 }
 void execute_input(char* command, int flag) {
     if (strlen(command) < 1) return;
