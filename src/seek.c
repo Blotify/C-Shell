@@ -1,0 +1,4 @@
+#include "seek.h"
+void expand_path(char* p){if(p[0]=='~'){char t[MAX_PATH];snprintf(t,MAX_PATH,"%s%s",home_dir,p+1);strncpy(p,t,MAX_PATH);}else if(strcmp(p,"-")==0)strncpy(p,previous_dir,MAX_PATH);}
+void seek_in_directory(const char*s,const char*d,int fd,int ff,int fe){int f=0;if(fd&&ff){fprintf(stderr,"Invalid flags!\n");return;}search_directory(d,s,fd,ff,fe,&f);if(!f)printf("No match found!\n");}
+void search_directory(const char*dir,const char*s,int fd,int ff,int fe,int*f){DIR*d=opendir(dir);if(!d)return;struct dirent*e;struct stat st;char fp[MAX_PATH];while((e=readdir(d))!=NULL){snprintf(fp,MAX_PATH,"%s/%s",dir,e->d_name);if(stat(fp,&st)==-1)continue;int id=S_ISDIR(st.st_mode);if((fd&&!id)||(ff&&id))continue;if(strcmp(e->d_name,s)==0){printf("%s%s%s\n",id?"\033[1;34m":"\033[1;32m",fp,"\033[0m");*f=1;}if(id&&strcmp(e->d_name,".")&&strcmp(e->d_name,".."))search_directory(fp,s,fd,ff,fe,f);}closedir(d);}
