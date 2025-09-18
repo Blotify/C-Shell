@@ -1,0 +1,4 @@
+alias reveall = reveal -la
+alias seekneo = seek neonate.c
+func mk_hop() { mkdir ""; hop ""; }
+func hop_seek() { hop ""; seek ""; }
