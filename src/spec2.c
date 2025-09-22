@@ -1,56 +1,16 @@
 #include "spec2.h"
-char* trim_whitespace(char* str) {
-    char *end;
-    while(isspace((unsigned char)*str)) str++;
-    if(*str == 0) return str;
-    end = str + strlen(str) - 1;
-    while(end > str && isspace((unsigned char)*end)) end--;
-    *(end+1) = '\0'; return str;
+char*trim(char*s){char*e;while(isspace((unsigned char)*s))s++;if(*s==0)return s;e=s+strlen(s)-1;while(e>s&&isspace((unsigned char)*e))e--;*(e+1)='\0';return s;}
+int cnt(const char*s,char c){int n=0;while(*s){if(*s==c)n++;s++;}return n;}
+int proc(char*c,char*t){char cc[4096];strncpy(cc,c,sizeof(cc));cc[sizeof(cc)-1]='\0';char*f=strtok(cc," ");return f&&strcmp(f,t)==0?1:0;}
+void epi(char*c,int fg){
+    if(proc(c,"hop")){process_hop_command(c);return;}
+    else if(proc(c,"proclore")){process_proclore_command(c);return;}
+    else if(proc(c,"log")){if(strcmp(c,"log purge")==0){purge_log(home_dir);printf("Log cleared.\n");return;}else if(strncmp(c,"log execute ",12)==0){print_command_from_log(home_dir,atoi(c+12));return;}else{display_log(home_dir);return;}}
+    else if(proc(c,"reveal")){process_reveal_command(c);return;}
+    else if(proc(c,"seek")){char*t=strtok(c," ");t=strtok(NULL," ");int d=0,f=0,e=0;char s[MAX_PATH]={0},td[MAX_PATH]={0};if(t&&t[0]=='-'){while(t&&t[0]=='-'){for(int i=1;t[i];i++){if(t[i]=='d')d=1;if(t[i]=='f')f=1;if(t[i]=='e')e=1;}t=strtok(NULL," ");}}if(d&&f){fprintf(stderr,"Invalid flags!\n");return;}if(t){strncpy(s,t,MAX_PATH);t=strtok(NULL," ");}if(t){strncpy(td,t,MAX_PATH);expand_path(td);}else strncpy(td,".",MAX_PATH);expand_path(s);seek_in_directory(s,td,d,f,e);return;}
+    else{syscommands(c,fg);}
 }
-int count_occurrences(const char *str, char ch) {
-    int count = 0;
-    while (*str) { if (*str == ch) count++; str++; }
-    return count;
-}
-int processor(char* command, char* totest) {
-    char command_copy[4096];
-    strncpy(command_copy, command, sizeof(command_copy));
-    command_copy[sizeof(command_copy)-1] = '\0';
-    char *first_word = strtok(command_copy, " ");
-    return (first_word && strcmp(first_word, totest) == 0) ? 1 : 0;
-}
-void execute_post_input(char* command, int flag) {
-    if (processor(command, "hop")) { process_hop_command(command); return; }
-    else if (processor(command, "proclore")) { process_proclore_command(command); return; }
-    else if (processor(command, "log")) {
-        if (strcmp(command, "log purge") == 0) { purge_log(home_dir); printf("Log cleared.\n"); return; }
-        else if (strncmp(command, "log execute ", 12) == 0) { print_command_from_log(home_dir, atoi(command+12)); return; }
-        else { display_log(home_dir); return; }
-    }
-    else if (processor(command, "reveal")) { process_reveal_command(command); return; }
-    else { syscommands(command, flag); }
-}
-void execute_input(char* command, int flag) {
-    if (strlen(command) < 1) return;
-    execute_post_input(command, flag);
-}
-void semicolon_input(char* command, int flag) {
-    int numsc = count_occurrences(command, ';');
-    if (numsc == 0) { execute_input(command, flag); return; }
-    char* token = strtok(command, ";");
-    while (token != NULL) {
-        token = trim_whitespace(token);
-        if (token && strlen(token) > 0) execute_input(token, 0);
-        token = strtok(NULL, ";");
-    }
-}
-void and_input(char* command) {
-    int numand = count_occurrences(command, '&');
-    if (numand == 0) { semicolon_input(command, 0); return; }
-    char* token = strtok(command, "&");
-    while (token != NULL) {
-        token = trim_whitespace(token);
-        if (token && strlen(token) > 0) semicolon_input(token, 1);
-        token = strtok(NULL, "&");
-    }
-}
+int inv(const char*c){int l=strlen(c);char p='\0';int gc=0;for(int i=0;i<l;i++){if(isspace(c[i]))continue;if(c[i]=='<'||c[i]=='|'||c[i]=='>'||c[i]=='&'){if((p=='<'||p=='|'||p=='&')||(c[i]=='>'&&gc>=2)||(p=='>'&&c[i]=='&'))return 1;if(c[i]=='>')gc++;else gc=0;p=c[i];}else{p='\0';gc=0;}}return 0;}
+void ei(char*c,int fg){if(strlen(c)<1)return;if(strstr(c,">")||strstr(c,"<"))return;handle_command(c,fg);}
+void si(char*c,int fg){int n=cnt(c,';');if(n==0){ei(c,fg);return;}char**cm=calloc(n+1,sizeof(char*));char*t=strtok(c,";");int i=0;while(t){t=trim(t);cm[i]=strdup(t);i++;t=strtok(NULL,";");}for(int j=0;j<i;j++){if(cm[j]){if(j==i-1&&fg)ei(cm[j],1);else ei(cm[j],0);free(cm[j]);}}free(cm);}
+void ai(char*c){if(inv(c)){fprintf(stderr,"Invalid command\n");return;}int n=cnt(c,'&');if(n==0){si(c,0);return;}char**cm=calloc(n+1,sizeof(char*));char*t=strtok(c,"&");int i=0;while(t){t=trim(t);cm[i]=strdup(t);i++;t=strtok(NULL,"&");}for(int j=0;j<i;j++){if(cm[j]){if(i==1||j!=i-1)si(cm[j],1);else si(cm[j],0);free(cm[j]);}}free(cm);}
