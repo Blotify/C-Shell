@@ -1,5 +1,6 @@
 #ifndef NEONATE_H
 #define NEONATE_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,5 +13,10 @@
 #include <dirent.h>
 #include <signal.h>
 #include <sys/select.h>
-void pnc(const char*c);int ixkp();pid_t gmrp();long long gpst(pid_t p);
+
+void process_neonate_command(const char *command);
+int is_x_key_pressed();
+pid_t get_most_recent_pid();
+long long get_process_start_time(pid_t pid);
+
 #endif
